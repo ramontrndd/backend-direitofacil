@@ -1,5 +1,4 @@
 const mysql = require("mysql");
-
 require("dotenv").config();
 
 var connection = mysql.createConnection({
@@ -10,11 +9,13 @@ var connection = mysql.createConnection({
   database: process.env.DB_DATABASE,
 });
 
-connection.connect((err)=> {
-    if(!err) {
-        console.log("Database is connected");
-    }
-    else {
-        console.log(err);
-    }
-})
+connection.connect((err) => {
+  if (!err) {
+    console.log("Database is connected");
+  } else {
+    console.log(err);
+  }
+});
+
+
+module.exports = connection;
