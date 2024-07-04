@@ -8,10 +8,11 @@ var connection = mysql.createConnection({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
 });
+const port = process.env.PORT;
 
 connection.connect((err) => {
   if (!err) {
-    console.log("Database is connected");
+    console.log(`"Database is connected - API up running at localhost:${port}"`);
   } else {
     console.log(err);
   }
