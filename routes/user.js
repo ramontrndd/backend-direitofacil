@@ -6,21 +6,9 @@ const nodemailer = require("nodemailer");
 const auth = require("../middlewares/authentication");
 const checkRole = require("../middlewares/checkRole");
 const bcrypt = require("bcryptjs");
+const authentication = require("../middlewares/authentication");
 
 require("dotenv").config();
-
-router.get("/get", auth.authenticationToken, checkRole.checkRole, (req, res) => {
-  var query =
-    "select id, name,contactNumber,email, status from user where role IN ('user', 'admin')";
-  connection.query(query, (err, results, ) => {
-    if (!err) {
-      return res.status(200).json(results);
-      
-    } else {
-      return res.status(500).json(err);
-    }
-  });
-});
 
 router.post("/register", (req, res) => {
   let user = req.body;
@@ -85,14 +73,47 @@ router.post("/login", (req, res) => {
   });
 });
 
-var transporter = nodemailer.createTransport({
-  host: "smtp-mail.outlook.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
+router.post("/changePassword", authentication.authenticationToken, (req, res) => {
+  const user = req.body;
+  const email = res.locals.email;
+  console.log(email);
+  const query = "select * from user where email=?";
+
+  connection.query(query, [email], (err, results) => {
+    if (!err) {
+      if (results.length <= 0) {
+        return res.status(400).json({ message: "Usuário não encontrado!" });
+      } else {
+        const storedPassword = results[0].password;
+        bcrypt.compare(user.oldPassword, storedPassword, (err, isMatch) => {
+          if (err) {
+            return res.status(500).json({ message: "Erro ao comparar senhas!" });
+          }
+
+          if (!isMatch) {
+            return res.status(400).json({ message: "Senha antiga incorreta!" });
+          }
+
+          bcrypt.hash(user.newPassword, 10, (err, hashedPassword) => {
+            if (err) {
+              return res.status(500).json({ message: "Erro ao hashear nova senha!" });
+            }
+
+            const updateQuery = "update user set password=? where email=?";
+            connection.query(updateQuery, [hashedPassword, email], (err, results) => {
+              if (!err) {
+                return res.status(200).json({ message: "Senha atualizada com sucesso!" });
+              } else {
+                return res.status(500).json(err);
+              }
+            });
+          });
+        });
+      }
+    } else {
+      return res.status(500).json(err);
+    }
+  });
 });
 
 router.post("/forgotPassword", (req, res) => {
@@ -129,6 +150,29 @@ router.post("/forgotPassword", (req, res) => {
           }
         });
       }
+    } else {
+      return res.status(500).json(err);
+    }
+  });
+});
+
+var transporter = nodemailer.createTransport({
+  host: "smtp-mail.outlook.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
+
+router.get("/get", auth.authenticationToken, checkRole.checkRole, (req, res) => {
+  var query =
+    "select id, name,contactNumber,email, status from user where role IN ('user', 'admin')";
+  connection.query(query, (err, results, ) => {
+    if (!err) {
+      return res.status(200).json(results);
+      
     } else {
       return res.status(500).json(err);
     }
