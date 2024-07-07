@@ -156,6 +156,24 @@ router.post("/forgotPassword", (req, res) => {
   });
 });
 
+router.patch("/userUpdate", auth.authenticationToken,checkRole.checkRole, (req, res) => {
+    let user = req.body;
+    var query = "update user set status=? where id=?";
+    connection.query(query, [user.status, user.id], (err, results) => {
+      if (!err) {
+        if (results.affectedRows == 0) {
+          return res.status(404).json({ message: "Usuário não existe" });
+        }
+        return res
+          .status(200)
+          .json({ message: "Usuário autorizado para acesso ao sistema" });
+      } else {
+        return res.status(500).json(err);
+      }
+    });
+  }
+);
+
 var transporter = nodemailer.createTransport({
   host: "smtp-mail.outlook.com",
   port: 587,
