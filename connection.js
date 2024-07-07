@@ -4,15 +4,15 @@ require("dotenv").config();
 var connection = mysql.createConnection({
   port: process.env.DB_PORT,
   host: process.env.DB_HOST,
-  user: process.env.DB_USERNAME,
+  user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
+  database: process.env.DB_NAME,
 });
 const port = process.env.PORT;
 
 connection.connect((err) => {
   if (!err) {
-    console.log(`"Database is connected - API up running at localhost:${port}"`);
+    console.log(`Database is connected - API up running at localhost:${port}`);
   } else {
     console.log(err);
   }

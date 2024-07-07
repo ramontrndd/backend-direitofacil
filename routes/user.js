@@ -3,20 +3,38 @@ const connection = require("../connection");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const auth = require("../middlewares/authentication");
+const checkRole = require("../middlewares/checkRole");
+const bcrypt = require("bcryptjs");
 
 require("dotenv").config();
 
-router.post("/signup", (req, res) => {
+router.get("/get", auth.authenticationToken, checkRole.checkRole, (req, res) => {
+  var query =
+    "select id, name,contactNumber,email, status from user where role IN ('user', 'admin')";
+  connection.query(query, (err, results, ) => {
+    if (!err) {
+      return res.status(200).json(results);
+      
+    } else {
+      return res.status(500).json(err);
+    }
+  });
+});
+
+router.post("/register", (req, res) => {
   let user = req.body;
   query = "select email,password,role,status from user where email=?";
   connection.query(query, [user.email], (err, results) => {
     if (!err) {
       if (results.length <= 0) {
+        const saltRound = 10;
+        const hashedPassword = bcrypt.hashSync(user.password, saltRound);
         query =
           "insert into user (name,contactNumber,email,password,status,role) values(?,?,?,?,'false','user')";
         connection.query(
           query,
-          [user.name, user.contactNumber, user.email, user.password],
+          [user.name, user.contactNumber, user.email, user.password = hashedPassword],
           (err, results) => {
             if (!err) {
               return res
@@ -40,27 +58,26 @@ router.post("/signup", (req, res) => {
 
 router.post("/login", (req, res) => {
   const user = req.body;
-  query = "select email,password,role,status from user where email=?";
-  connection.query(query, [user.email], (err, results) => {
+  const query = "select email,password,role,status from user where email=?";
+  connection.query(query, [user.email], async (err, results) => {
     if (!err) {
-      if (results.length <= 0 || results[0].password != user.password) {
-        return res
-          .status(401)
-          .json({ message: "Usuário ou senha incorretos!" });
-      } else if (results[0].status === "false") {
-        return res
-          .status(401)
-          .json({ message: "Aguarde a aprovação do Gerente" });
-      } else if (results[0].password == user.password) {
-        const response = { email: results[0].email, role: results[0].role };
-        const acessToken = jwt.sign(response, process.env.ACCESS_TOKEN, {
-          expiresIn: "8h",
-        });
-        res.status(200).json({ token: acessToken });
+      if (results.length <= 0) {
+        return res.status(401).json({ message: "Usuário ou senha incorretos!" });
       } else {
-        return res
-          .status(400)
-          .json({ message: "Algo deu errado, Por favor tente mais tarde!" });
+        const dbUser = results[0];
+        const match = await bcrypt.compare(user.password, dbUser.password);
+        if (!match) {
+          return res.status(401).json({ message: "Usuário ou senha incorretos!" });
+        } else if (dbUser.status === "false") {
+          return res.status(401).json({ message: "Aguarde a aprovação do Gerente" });
+        } else {
+          const response = { email: dbUser.email, role: dbUser.role };
+          const acessToken = jwt.sign(response, process.env.ACCESS_TOKEN, { expiresIn: "4h" });
+
+          res.cookie("token", acessToken, { httpOnly: true, secure: false });
+
+          res.status(200).json({ token: acessToken });
+        }
       }
     } else {
       return res.status(500).json(err);
