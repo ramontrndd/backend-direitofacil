@@ -1,5 +1,5 @@
 const express = require("express");
-const connection = require("../connection");
+const connection = require("../config/connection");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
