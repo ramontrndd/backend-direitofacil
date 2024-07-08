@@ -197,4 +197,8 @@ router.get("/get", auth.authenticationToken, checkRole.checkRole, (req, res) => 
   });
 });
 
+router.get("/checkToken", auth.authenticationToken, (req, res) => {
+  return res.status(200).json({ message: "true" });
+});
+
 module.exports = router;
