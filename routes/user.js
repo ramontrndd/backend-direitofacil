@@ -156,7 +156,7 @@ router.post("/forgotPassword", (req, res) => {
   });
 });
 
-router.patch("/userUpdate", auth.authenticationToken,checkRole.checkRole, (req, res) => {
+router.patch("/userUpdate", auth.authenticationToken, checkRole.checkRole, (req, res) => {
     let user = req.body;
     var query = "update user set status=? where id=?";
     connection.query(query, [user.status, user.id], (err, results) => {
@@ -184,7 +184,7 @@ var transporter = nodemailer.createTransport({
   },
 });
 
-router.get("/get", auth.authenticationToken, checkRole.checkRole, (req, res) => {
+router.get("/getUsers", auth.authenticationToken, checkRole.checkRole, (req, res) => {
   var query =
     "select id, name,contactNumber,email, status from user where role IN ('user', 'admin')";
   connection.query(query, (err, results, ) => {
