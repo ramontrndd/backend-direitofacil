@@ -1,3 +1,5 @@
+
+
 # Projeto Tela de Login
 
 ## Descrição
@@ -15,7 +17,7 @@ Este projeto consiste em uma tela de login desenvolvida em Node.js com Express, 
 - mysql
 - nodemailder
 
-<div style="display: flex; justify-content: center;">
+<div align="center">
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mysql/mysql-original-wordmark.svg" width="100px" height="100px" style="margin: 0 20px;"/>
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original-wordmark.svg" width="100px" height="100px" style="margin: 0 20px;"/>
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/express/express-original-wordmark.svg" width="100px" height="100px" style="margin: 0 20px;"/>
